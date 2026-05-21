@@ -18,32 +18,35 @@ Cette version est identique à la version PC, adaptée pour tourner sur **Termux
 ## 🚀 Installation (première fois)
 
 ### Étape 1 — Prépare les fichiers
-Copie le dossier **`Phantom-Termux`** dans le dossier **Téléchargements** de ton téléphone.
-
-### Étape 2 — Ouvre Termux et lance :
+Si tu as récupéré ce bot via GitHub, ouvre Termux et clone-le directement :
 ```bash
-bash ~/storage/downloads/Phantom-Termux/install_termux.sh
+git clone <url-de-ton-repo-github> termux-bot
+cd termux-bot
+```
+
+### Étape 2 — Lance l'installation
+```bash
+bash install_termux.sh
 ```
 
 Le script va automatiquement :
-1. Demander l'accès au stockage
+1. Demander l'accès au stockage (si besoin)
 2. Mettre à jour Termux
-3. Installer Node.js, Python, ffmpeg
+3. Installer Node.js, Python, ffmpeg, et les outils de compilation
 4. Installer `yt-dlp` via pip
-5. Copier les fichiers dans `~/PhantomBot`
-6. Installer les modules npm
+5. Configurer le dossier de travail courant
+6. Installer les modules npm (optimisé pour ARM)
 7. Proposer de lancer le bot
 
 ---
 
 ## 🔄 Mises à jour
 
-Pour mettre à jour le bot après une modification :
+Pour mettre à jour le bot après une modification sur GitHub :
 ```bash
-# Copie la nouvelle version dans Téléchargements puis :
-cp -r ~/storage/downloads/Phantom-Termux ~/PhantomBot
-cd ~/PhantomBot
-npm install
+cd termux-bot
+git pull
+npm install --ignore-scripts --no-audit --no-fund --omit=optional
 node index.js
 ```
 
@@ -52,7 +55,7 @@ node index.js
 ## ▶️ Lancement manuel
 
 ```bash
-cd ~/PhantomBot
+cd termux-bot
 node index.js
 ```
 
@@ -64,7 +67,7 @@ Pour que le bot continue de tourner même quand Termux est en arrière-plan :
 
 ```bash
 # Option 1 : nohup (simple)
-cd ~/PhantomBot && nohup node index.js &
+cd termux-bot && nohup node index.js &
 
 # Option 2 : avec pm2 (recommandé, avec redémarrage auto)
 npm install -g pm2

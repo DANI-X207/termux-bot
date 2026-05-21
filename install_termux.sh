@@ -22,39 +22,26 @@ echo "🔄 [2/7] Mise à jour de Termux..."
 pkg update -y && pkg upgrade -y
 
 # ── 3. Dépendances système ───────────────────────────────────
-echo "📦 [3/7] Installation de Node.js, Python, ffmpeg..."
-pkg install -y nodejs python ffmpeg git
+echo "📦 [3/7] Installation de Node.js, Python, ffmpeg et outils de compilation..."
+pkg install -y nodejs python ffmpeg git make clang binutils
 
 # ── 4. Installer yt-dlp via pip ─────────────────────────────
 echo "📥 [4/7] Installation de yt-dlp..."
 pip install -U yt-dlp
 
-# ── 5. Copier les fichiers du bot ────────────────────────────
-echo "📁 [5/7] Copie des fichiers du bot..."
-BOT_DIR="$HOME/PhantomBot"
-
-if [ -d "$BOT_DIR" ]; then
-    echo "⚠️  Le dossier $BOT_DIR existe déjà. Mise à jour..."
-    rm -rf "$BOT_DIR"
-fi
-
-# Copie depuis le stockage (place le dossier Phantom-Termux dans Téléchargements)
-if [ -d "$HOME/storage/downloads/Phantom-Termux" ]; then
-    cp -r "$HOME/storage/downloads/Phantom-Termux" "$BOT_DIR"
-    echo "✅ Fichiers copiés depuis les Téléchargements."
-else
-    echo "❌ ERREUR : Dossier 'Phantom-Termux' introuvable dans Téléchargements."
-    echo "   → Copie le dossier du bot dans ton dossier Téléchargements d'abord !"
-    exit 1
-fi
+# ── 5. Préparation du dossier ──────────────────────────────────
+echo "📁 [5/7] Configuration du dossier de travail..."
+BOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+echo "✅ Dossier actuel détecté : $BOT_DIR"
+cd "$BOT_DIR"
 
 # ── 6. Installer les modules npm ─────────────────────────────
 echo "📦 [6/7] Installation des modules Node.js..."
-cd "$BOT_DIR"
 
-# Sur Termux, wa-sticker-formatter peut échouer sur ARM
-# On tente l'install normale, et on catch l'erreur de sharp si elle arrive
-npm install --ignore-scripts 2>/dev/null || npm install
+# Sur Termux, certains modules avec compilation native (C++) échouent souvent
+# On force l'ignorance des scripts postinstall et on saute les deps optionnelles
+export npm_config_build_from_source=true
+npm install --ignore-scripts --no-audit --no-fund --omit=optional
 
 echo ""
 echo "  👻  ╔══════════════════════════════════════╗"
