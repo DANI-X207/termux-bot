@@ -3,19 +3,17 @@ const { askAI, askAIWithHistory, askAIWithModel, GROQ_MODELS, resolveModel, duck
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const os = require('os');
 const execFile = util.promisify(require('child_process').execFile);
 
-// ── Chemin vers yt-dlp (cross-platform : Windows = .exe, Linux/Termux = binaire système) ──
-const os = require('os');
+// ── Chemin vers yt-dlp (cross-platform) ────────────────────────────────────
 const YTDLP_PATH = (() => {
-    // Sur Windows, utilise le binaire embarqué dans youtube-dl-exec
     if (os.platform() === 'win32') {
         return path.join(__dirname, 'node_modules', 'youtube-dl-exec', 'bin', 'yt-dlp.exe');
     }
-    // Sur Linux/Termux, yt-dlp est installé via pip et accessible dans le PATH
     const termuxBin = '/data/data/com.termux/files/usr/bin/yt-dlp';
     if (fs.existsSync(termuxBin)) return termuxBin;
-    return 'yt-dlp'; // Fallback : cherche dans le PATH système
+    return 'yt-dlp';
 })();
 
 let botActive = true;
@@ -102,10 +100,9 @@ function extractMedia(quoted) {
     return null;
 }
 
-// ── Disponibilité de ffmpeg (cherche dans le dossier local et dans le PATH système) ─────────
+// ── Disponibilité de ffmpeg (cross-platform) ─────────────────────────────
 const HAS_FFMPEG = (() => {
     if (os.platform() === 'win32') return fs.existsSync(path.join(__dirname, 'ffmpeg.exe'));
-    // Sur Linux/Termux, ffmpeg est installé via pkg dans le PATH
     const termuxFfmpeg = '/data/data/com.termux/files/usr/bin/ffmpeg';
     if (fs.existsSync(termuxFfmpeg)) return true;
     const linuxFfmpeg = '/usr/bin/ffmpeg';
@@ -117,7 +114,6 @@ const HAS_FFMPEG = (() => {
 async function downloadYoutubeVideo(query) {
     const play = require('play-dl');
     const youtubedl = require('youtube-dl-exec');
-    const os = require('os');
 
     const results = await play.search(query, { source: { youtube: 'video' }, limit: 1 });
     if (!results || results.length === 0) throw new Error('Aucun résultat trouvé');
@@ -184,7 +180,6 @@ async function downloadMedia(mediaMessage, mediaType) {
 // ── Recherche + Télécharge l'audio YouTube via yt-dlp ────────────────────────
 async function downloadYoutubeAudio(query) {
     const play = require('play-dl');
-    const os = require('os');
 
     // 1. Recherche jusqu'à 3 résultats via play-dl (pour avoir des alternatives)
     let candidates = [];
@@ -575,6 +570,10 @@ module.exports = async (sock, m) => {
                 }
                 break;
             }
+
+                    await sock.sendMessage(from, {
+                        text: `🎬 _Envoi de :_ *${result.title}* par *${result.author}* _(${result.duration} | ${result.sizeMB}MB)_`
+                    });
                     await sock.sendMessage(from, {
                         video: result.buffer,
                         mimetype: 'video/mp4',
